@@ -3,12 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0F766E" />
+    <meta name="theme-color" content="#0b1120" />
     <title>Farmhouse Booking Admin</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="app-loading" aria-busy="true">
+    <div id="appLoader" class="app-loader" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading dashboard...</p>
+    </div>
     <header class="topbar">
       <h1>Farmhouse Booking Admin</h1>
       <div class="topbar-actions">
@@ -173,6 +177,6 @@
       <article id="bookingSlip" class="booking-slip"></article>
     </dialog>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
   </body>
 </html>
