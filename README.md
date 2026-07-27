@@ -1,14 +1,43 @@
 # Farmhouse Booking Admin (PWA)
 
-Static admin-only booking management website built with HTML, CSS, JavaScript, and LocalStorage.
+Farmhouse Booking Admin is a static Progressive Web App for managing farmhouse bookings.  
+It is built with HTML, CSS, and JavaScript, and stores data in LocalStorage (no backend required).
+
+## Project Description
+
+- Manage bookings with create, edit, delete, and search flows
+- View dashboard insights (today, upcoming, monthly revenue, recent bookings)
+- Generate booking confirmation slips and print/share them
+- Export/import backups and use app settings for branding details
+- Install as a PWA with offline-capable support
 
 ## Run
 
-```bash
-npm run dev
-```
+1. Install dependencies:
 
-Or open `/home/runner/work/generate/generate/index.html` directly in a browser.
+   ```bash
+   npm install
+   ```
+
+2. Run in development mode:
+
+   ```bash
+   npm run dev
+   ```
+
+3. Build check:
+
+   ```bash
+   npm run build
+   ```
+
+4. Start server:
+
+   ```bash
+   npm run start
+   ```
+
+You can also open `/home/runner/work/generate/generate/index.html` directly in a browser.
 
 ## Deploy (Vercel)
 
