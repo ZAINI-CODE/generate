@@ -93,11 +93,7 @@ function saveBookings() {
 }
 
 function saveSettings() {
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  } catch {
-    alert("Unable to save settings. Please check browser storage permissions.");
-  }
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
 function generateBookingId() {
