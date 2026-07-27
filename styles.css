@@ -1,0 +1,322 @@
+:root {
+  --green: #0f766e;
+  --green-dark: #0b5f59;
+  --bg: #f3f4f6;
+  --white: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --radius: 14px;
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--green);
+  color: var(--white);
+  flex-wrap: wrap;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+button,
+.import-btn {
+  border: none;
+  background: var(--green);
+  color: var(--white);
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.secondary {
+  background: #9ca3af;
+}
+
+.import-btn {
+  display: inline-block;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 0;
+}
+
+.tab {
+  background: #d1d5db;
+  color: #111827;
+}
+
+.tab.active {
+  background: var(--green);
+  color: var(--white);
+}
+
+main {
+  padding: 1rem 1.5rem 2rem;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.stat-card p {
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin: 0.4rem 0 0;
+}
+
+#searchInput,
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font: inherit;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.65rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.two-col {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+dialog {
+  width: min(900px, 96vw);
+  border: none;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+dialog::backdrop {
+  background: rgba(17, 24, 39, 0.7);
+}
+
+.slip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.booking-slip {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 1.3rem;
+  color: #111827;
+}
+
+.slip-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 0.8rem;
+}
+
+.slip-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #ecfeff;
+}
+
+.slip-title h2,
+.slip-title h3,
+.slip-title p {
+  margin: 0.15rem 0;
+}
+
+.slip-badge {
+  background: var(--green);
+  color: white;
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.slip-section {
+  margin-top: 1rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 0.8rem;
+}
+
+.slip-section h4 {
+  margin: 0 0 0.6rem;
+  color: var(--green-dark);
+}
+
+.slip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.45rem 1rem;
+}
+
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.badge-list span {
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+}
+
+.terms {
+  border: 1px solid #99f6e4;
+  background: #ecfeff;
+}
+
+.terms ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.slip-footer {
+  margin-top: 1rem;
+  text-align: center;
+  color: #374151;
+}
+
+.action-inline {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.action-inline button {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #bookingSlip,
+  #bookingSlip * {
+    visibility: visible;
+  }
+
+  #bookingSlip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding: 1rem;
+  }
+
+  .tabs,
+  main {
+    padding: 0.8rem;
+  }
+}

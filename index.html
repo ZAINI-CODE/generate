@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0F766E" />
+    <title>Farmhouse Booking Admin</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Farmhouse Booking Admin</h1>
+      <div class="topbar-actions">
+        <button id="exportJsonBtn">Export JSON Backup</button>
+        <label class="import-btn">
+          Import JSON Backup
+          <input id="importJsonInput" type="file" accept="application/json" hidden />
+        </label>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="new-booking">New Booking</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <main>
+      <section id="dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <article class="card stat-card"><h3>Total Bookings</h3><p id="totalBookings">0</p></article>
+          <article class="card stat-card"><h3>Today's Bookings</h3><p id="todaysBookings">0</p></article>
+          <article class="card stat-card"><h3>Upcoming Bookings</h3><p id="upcomingBookings">0</p></article>
+          <article class="card stat-card"><h3>Monthly Revenue</h3><p id="monthlyRevenue">PKR 0</p></article>
+        </div>
+
+        <div class="card search-card">
+          <input id="searchInput" type="search" placeholder="Search by Client Name, Contact Number, Booking ID, Booking Date" />
+        </div>
+
+        <div class="card table-card">
+          <h3>Recent Bookings</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Client</th>
+                  <th>Contact</th>
+                  <th>Date</th>
+                  <th>Event</th>
+                  <th>Guests</th>
+                  <th>Total (PKR)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="new-booking" class="tab-content">
+        <form id="bookingForm" class="card form-card">
+          <h2>Create / Edit Booking</h2>
+          <div class="grid two-col">
+            <label>Booking ID
+              <input id="bookingId" name="bookingId" type="text" readonly />
+            </label>
+            <label>Client Name
+              <input name="clientName" type="text" required />
+            </label>
+            <label>Contact Number
+              <input name="contactNumber" type="tel" required />
+            </label>
+            <label>Address
+              <input name="address" type="text" required />
+            </label>
+            <label>Booking Date
+              <input id="bookingDate" name="bookingDate" type="date" required />
+            </label>
+            <label>Day
+              <input id="day" name="day" type="text" readonly />
+            </label>
+            <label>Time Slot
+              <input name="timeSlot" type="text" placeholder="Morning / Evening / Full Day" required />
+            </label>
+            <label>Start Time
+              <input name="startTime" type="time" required />
+            </label>
+            <label>End Time
+              <input name="endTime" type="time" required />
+            </label>
+            <label>Event Type
+              <select name="eventType" required>
+                <option value="">Select</option>
+                <option>Pool Party</option>
+                <option>Family Gathering</option>
+                <option>Birthday Party</option>
+                <option>BBQ Party</option>
+                <option>Corporate Event</option>
+                <option>Friends Get Together</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label>Number of Guests
+              <input name="guests" type="number" min="1" required />
+            </label>
+            <label>Total Booking Amount (PKR)
+              <input id="totalAmount" name="totalAmount" type="number" min="0" required />
+            </label>
+            <label>Advance Payment (PKR)
+              <input id="advancePayment" name="advancePayment" type="number" min="0" required />
+            </label>
+            <label>Remaining Amount (PKR)
+              <input id="remainingAmount" name="remainingAmount" type="number" readonly />
+            </label>
+          </div>
+          <label>Special Notes
+            <textarea name="specialNotes" rows="3"></textarea>
+          </label>
+          <div class="form-actions">
+            <button type="submit">Save Booking</button>
+            <button id="resetFormBtn" type="button" class="secondary">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="settings" class="tab-content">
+        <form id="settingsForm" class="card form-card">
+          <h2>Farmhouse Settings</h2>
+          <div class="grid two-col">
+            <label>Farmhouse Name
+              <input name="farmhouseName" type="text" required />
+            </label>
+            <label>Logo
+              <input id="logoInput" type="file" accept="image/*" />
+            </label>
+            <label>Phone Number
+              <input name="phoneNumber" type="text" required />
+            </label>
+            <label>WhatsApp Number
+              <input name="whatsappNumber" type="text" required />
+            </label>
+            <label>Address
+              <input name="farmhouseAddress" type="text" required />
+            </label>
+            <label>Footer Message
+              <textarea name="footerMessage" rows="4" required></textarea>
+            </label>
+          </div>
+          <label class="checkbox-row">
+            <input name="autoBackup" type="checkbox" />
+            Enable automatic LocalStorage backup snapshots
+          </label>
+          <div class="form-actions">
+            <button type="submit">Save Settings</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <dialog id="slipDialog">
+      <div class="slip-actions no-print">
+        <button id="printSlipBtn">Print Slip</button>
+        <button id="downloadPdfBtn">Download PDF</button>
+        <button id="shareWhatsappBtn">Share WhatsApp</button>
+        <button id="shareEmailBtn">Share Email</button>
+        <button id="nativeShareBtn">Share</button>
+        <button id="closeSlipBtn" class="secondary">Close</button>
+      </div>
+      <article id="bookingSlip" class="booking-slip"></article>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
