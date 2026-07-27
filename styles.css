@@ -1,12 +1,16 @@
 :root {
-  --green: #0f766e;
-  --green-dark: #0b5f59;
-  --bg: #f3f4f6;
-  --white: #ffffff;
-  --text: #1f2937;
-  --muted: #6b7280;
+  --green: #14b8a6;
+  --green-dark: #0d9488;
+  --bg: #020617;
+  --surface: #0b1120;
+  --surface-soft: #111827;
+  --surface-strong: #1f2937;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --border: #334155;
   --radius: 14px;
   font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  color-scheme: dark;
 }
 
 * {
@@ -17,6 +21,33 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  min-height: 100vh;
+}
+
+.app-loader {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.92);
+  display: grid;
+  place-content: center;
+  gap: 0.75rem;
+  z-index: 999;
+  text-align: center;
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid rgba(148, 163, 184, 0.2);
+  border-top-color: var(--green);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .topbar {
@@ -25,9 +56,15 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: var(--green);
-  color: var(--white);
+  background: linear-gradient(145deg, #0f172a, #111827);
+  color: var(--text);
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.65rem);
 }
 
 .topbar-actions {
@@ -39,16 +76,17 @@ body {
 button,
 .import-btn {
   border: none;
-  background: var(--green);
-  color: var(--white);
+  background: var(--green-dark);
+  color: #f8fafc;
   padding: 0.6rem 1rem;
   border-radius: 10px;
   cursor: pointer;
   font: inherit;
+  min-height: 44px;
 }
 
 .secondary {
-  background: #9ca3af;
+  background: #334155;
 }
 
 .import-btn {
@@ -59,20 +97,25 @@ button,
   display: flex;
   gap: 0.5rem;
   padding: 1rem 1.5rem 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .tab {
-  background: #d1d5db;
-  color: #111827;
+  background: var(--surface-strong);
+  color: #cbd5e1;
+  white-space: nowrap;
 }
 
 .tab.active {
   background: var(--green);
-  color: var(--white);
+  color: #022c22;
 }
 
 main {
   padding: 1rem 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .tab-content {
@@ -84,11 +127,12 @@ main {
 }
 
 .card {
-  background: var(--white);
+  background: var(--surface);
   border-radius: var(--radius);
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.35);
 }
 
 .stats-grid {
@@ -115,9 +159,11 @@ textarea,
 select {
   width: 100%;
   padding: 0.65rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 10px;
   font: inherit;
+  background: var(--surface-soft);
+  color: var(--text);
 }
 
 .table-wrap {
@@ -127,14 +173,21 @@ select {
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 760px;
 }
 
 th,
 td {
   padding: 0.65rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   text-align: left;
   font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  padding: 1.2rem 0.75rem;
 }
 
 .grid {
@@ -174,6 +227,8 @@ dialog {
   border: none;
   border-radius: 16px;
   padding: 1rem;
+  background: var(--surface);
+  color: var(--text);
 }
 
 dialog::backdrop {
@@ -188,11 +243,11 @@ dialog::backdrop {
 }
 
 .booking-slip {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 1.3rem;
-  color: #111827;
+  color: var(--text);
 }
 
 .slip-header {
@@ -208,7 +263,7 @@ dialog::backdrop {
   height: 70px;
   border-radius: 12px;
   object-fit: cover;
-  background: #ecfeff;
+  background: #0b2532;
 }
 
 .slip-title h2,
@@ -228,7 +283,7 @@ dialog::backdrop {
 
 .slip-section {
   margin-top: 1rem;
-  background: #f9fafb;
+  background: #0f172a;
   border-radius: 12px;
   padding: 0.8rem;
 }
@@ -251,16 +306,16 @@ dialog::backdrop {
 }
 
 .badge-list span {
-  background: #d1fae5;
-  color: #065f46;
+  background: #134e4a;
+  color: #ccfbf1;
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
   font-size: 0.78rem;
 }
 
 .terms {
-  border: 1px solid #99f6e4;
-  background: #ecfeff;
+  border: 1px solid #115e59;
+  background: #0d2634;
 }
 
 .terms ul {
@@ -271,7 +326,7 @@ dialog::backdrop {
 .slip-footer {
   margin-top: 1rem;
   text-align: center;
-  color: #374151;
+  color: #cbd5e1;
 }
 
 .action-inline {
@@ -303,10 +358,22 @@ dialog::backdrop {
     border: none;
     border-radius: 0;
     box-shadow: none;
+    background: #fff;
+    color: #111827;
   }
 
   .no-print {
     display: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  main {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -318,5 +385,14 @@ dialog::backdrop {
   .tabs,
   main {
     padding: 0.8rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slip-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

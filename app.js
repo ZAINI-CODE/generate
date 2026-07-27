@@ -52,18 +52,23 @@ const remainingAmountInput = document.getElementById("remainingAmount");
 const bookingIdInput = document.getElementById("bookingId");
 const slipDialog = document.getElementById("slipDialog");
 const bookingSlip = document.getElementById("bookingSlip");
+const appLoader = document.getElementById("appLoader");
 
 initialize();
 
 function initialize() {
-  setupTabs();
-  setupFormBehaviors();
-  setupSettings();
-  setupBackupControls();
-  setupSlipActions();
-  resetBookingForm();
-  renderDashboard();
-  registerServiceWorker();
+  setLoadingState(true);
+  requestAnimationFrame(() => {
+    setupTabs();
+    setupFormBehaviors();
+    setupSettings();
+    setupBackupControls();
+    setupSlipActions();
+    resetBookingForm();
+    renderDashboard();
+    registerServiceWorker();
+    setLoadingState(false);
+  });
 }
 
 function loadJSON(key, fallback) {
@@ -75,16 +80,24 @@ function loadJSON(key, fallback) {
 }
 
 function saveBookings() {
-  localStorage.setItem(BOOKING_KEY, JSON.stringify(bookings));
-  if (settings.autoBackup) {
-    const snapshots = loadJSON(BACKUP_KEY, []);
-    snapshots.push({ ts: Date.now(), data: bookings });
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(snapshots.slice(-20)));
+  try {
+    localStorage.setItem(BOOKING_KEY, JSON.stringify(bookings));
+    if (settings.autoBackup) {
+      const snapshots = loadJSON(BACKUP_KEY, []);
+      snapshots.push({ ts: Date.now(), data: bookings });
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(snapshots.slice(-20)));
+    }
+  } catch {
+    alert("Unable to save bookings. Please check browser storage permissions.");
   }
 }
 
 function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    alert("Unable to save settings. Please check browser storage permissions.");
+  }
 }
 
 function generateBookingId() {
@@ -152,7 +165,7 @@ function setupFormBehaviors() {
   });
 
   document.getElementById("resetFormBtn").addEventListener("click", resetBookingForm);
-  searchInput.addEventListener("input", renderDashboard);
+  searchInput.addEventListener("input", debounce(renderDashboard, 120));
 }
 
 function setupSettings() {
@@ -248,34 +261,45 @@ function renderDashboard() {
   const filtered = bookings.filter((item) => {
     if (!query) return true;
     return (
-      item.clientName.toLowerCase().includes(query) ||
-      item.contactNumber.toLowerCase().includes(query) ||
-      item.bookingId.toLowerCase().includes(query) ||
-      item.bookingDate.includes(query)
+      String(item.clientName || "")
+        .toLowerCase()
+        .includes(query) ||
+      String(item.contactNumber || "")
+        .toLowerCase()
+        .includes(query) ||
+      String(item.bookingId || "")
+        .toLowerCase()
+        .includes(query) ||
+      String(item.bookingDate || "").includes(query)
     );
   });
+
+  if (!filtered.length) {
+    bookingsTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">No bookings found.</td></tr>';
+    return;
+  }
 
   bookingsTableBody.innerHTML = filtered
     .slice(0, 50)
     .map(
       (item) => `
-      <tr>
-        <td>${item.bookingId}</td>
-        <td>${escapeHtml(item.clientName)}</td>
-        <td>${escapeHtml(item.contactNumber)}</td>
-        <td>${escapeHtml(item.bookingDate)}</td>
-        <td>${escapeHtml(item.eventType)}</td>
-        <td>${item.guests}</td>
-        <td>${Number(item.totalAmount).toLocaleString()}</td>
-        <td>
-          <div class="action-inline">
-            <button data-action="edit" data-id="${item.bookingId}">Edit</button>
-            <button data-action="delete" data-id="${item.bookingId}" class="secondary">Delete</button>
-            <button data-action="slip" data-id="${item.bookingId}">Generate Slip</button>
-          </div>
-        </td>
-      </tr>
-    `
+        <tr>
+          <td>${item.bookingId}</td>
+          <td>${escapeHtml(item.clientName)}</td>
+          <td>${escapeHtml(item.contactNumber)}</td>
+          <td>${escapeHtml(item.bookingDate)}</td>
+          <td>${escapeHtml(item.eventType)}</td>
+          <td>${item.guests}</td>
+          <td>${Number(item.totalAmount).toLocaleString()}</td>
+          <td>
+            <div class="action-inline">
+              <button data-action="edit" data-id="${item.bookingId}">Edit</button>
+              <button data-action="delete" data-id="${item.bookingId}" class="secondary">Delete</button>
+              <button data-action="slip" data-id="${item.bookingId}">Generate Slip</button>
+            </div>
+          </td>
+        </tr>
+      `
     )
     .join("");
 
@@ -473,8 +497,24 @@ function fileToDataUrl(file) {
   });
 }
 
+function debounce(fn, wait) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
+function setLoadingState(isLoading) {
+  document.body.classList.toggle("app-loading", isLoading);
+  document.body.setAttribute("aria-busy", String(isLoading));
+  if (appLoader) {
+    appLoader.hidden = !isLoading;
+  }
+}
+
 function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
 }
