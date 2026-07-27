@@ -68,23 +68,25 @@ function initialize() {
 
 function loadJSON(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(decodeStoredPayload(raw)) ?? fallback;
   } catch {
     return fallback;
   }
 }
 
 function saveBookings() {
-  localStorage.setItem(BOOKING_KEY, JSON.stringify(bookings));
+  localStorage.setItem(BOOKING_KEY, encodeStoredPayload(JSON.stringify(bookings)));
   if (settings.autoBackup) {
     const snapshots = loadJSON(BACKUP_KEY, []);
     snapshots.push({ ts: Date.now(), data: bookings });
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(snapshots.slice(-20)));
+    localStorage.setItem(BACKUP_KEY, encodeStoredPayload(JSON.stringify(snapshots.slice(-20))));
   }
 }
 
 function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  localStorage.setItem(SETTINGS_KEY, encodeStoredPayload(JSON.stringify(settings)));
 }
 
 function generateBookingId() {
@@ -236,7 +238,7 @@ function renderDashboard() {
   const todaysBookings = bookings.filter((item) => item.bookingDate === today);
   const upcomingBookings = bookings.filter((item) => item.bookingDate > today);
   const monthlyRevenue = bookings
-    .filter((item) => item.bookingDate.startsWith(thisMonth))
+    .filter((item) => String(item.bookingDate || "").startsWith(thisMonth))
     .reduce((total, item) => total + Number(item.totalAmount || 0), 0);
 
   document.getElementById("totalBookings").textContent = String(bookings.length);
@@ -247,40 +249,54 @@ function renderDashboard() {
   const query = searchInput.value.toLowerCase().trim();
   const filtered = bookings.filter((item) => {
     if (!query) return true;
+    const client = String(item.clientName ?? "").toLowerCase();
+    const contact = String(item.contactNumber ?? "").toLowerCase();
+    const bookingId = String(item.bookingId ?? "").toLowerCase();
+    const bookingDate = String(item.bookingDate ?? "");
     return (
-      item.clientName.toLowerCase().includes(query) ||
-      item.contactNumber.toLowerCase().includes(query) ||
-      item.bookingId.toLowerCase().includes(query) ||
-      item.bookingDate.includes(query)
+      client.includes(query) ||
+      contact.includes(query) ||
+      bookingId.includes(query) ||
+      bookingDate.includes(query)
     );
   });
 
-  bookingsTableBody.innerHTML = filtered
-    .slice(0, 50)
-    .map(
-      (item) => `
-      <tr>
-        <td>${item.bookingId}</td>
-        <td>${escapeHtml(item.clientName)}</td>
-        <td>${escapeHtml(item.contactNumber)}</td>
-        <td>${escapeHtml(item.bookingDate)}</td>
-        <td>${escapeHtml(item.eventType)}</td>
-        <td>${item.guests}</td>
-        <td>${Number(item.totalAmount).toLocaleString()}</td>
-        <td>
-          <div class="action-inline">
-            <button data-action="edit" data-id="${item.bookingId}">Edit</button>
-            <button data-action="delete" data-id="${item.bookingId}" class="secondary">Delete</button>
-            <button data-action="slip" data-id="${item.bookingId}">Generate Slip</button>
-          </div>
-        </td>
-      </tr>
-    `
-    )
-    .join("");
+  bookingsTableBody.textContent = "";
+  filtered.slice(0, 50).forEach((item) => {
+    const row = document.createElement("tr");
+    [
+      item.bookingId,
+      item.clientName,
+      item.contactNumber,
+      item.bookingDate,
+      item.eventType,
+      String(item.guests),
+      Number(item.totalAmount || 0).toLocaleString(),
+    ].forEach((value) => {
+      const td = document.createElement("td");
+      td.textContent = value ?? "";
+      row.appendChild(td);
+    });
 
-  bookingsTableBody.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => handleBookingAction(button.dataset.action, button.dataset.id));
+    const actionCell = document.createElement("td");
+    const actionWrap = document.createElement("div");
+    actionWrap.className = "action-inline";
+    [
+      { label: "Edit", action: "edit", secondary: false },
+      { label: "Delete", action: "delete", secondary: true },
+      { label: "Generate Slip", action: "slip", secondary: false },
+    ].forEach((itemAction) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = itemAction.label;
+      button.dataset.action = itemAction.action;
+      if (itemAction.secondary) button.classList.add("secondary");
+      button.addEventListener("click", () => handleBookingAction(itemAction.action, item.bookingId));
+      actionWrap.appendChild(button);
+    });
+    actionCell.appendChild(actionWrap);
+    row.appendChild(actionCell);
+    bookingsTableBody.appendChild(row);
   });
 }
 
@@ -323,15 +339,11 @@ function handleBookingAction(action, bookingId) {
 }
 
 function renderSlip(booking) {
-  const logo = settings.logo
-    ? `<img class="slip-logo" src="${settings.logo}" alt="Farmhouse logo" />`
-    : '<div class="slip-logo"></div>';
-
   bookingSlip.innerHTML = `
     <header class="slip-header">
-      ${logo}
+      <div id="slipLogoContainer"></div>
       <div class="slip-title">
-        <h2>${escapeHtml(settings.farmhouseName)}</h2>
+        <h2 id="slipFarmhouseName"></h2>
         <p>Luxury Event Venue & Swimming Pool</p>
         <h3 class="slip-badge">BOOKING CONFIRMATION</h3>
       </div>
@@ -339,49 +351,82 @@ function renderSlip(booking) {
 
     <section class="slip-section">
       <h4>Guest Details</h4>
-      <div class="slip-grid">
-        <div><strong>Client Name:</strong> ${escapeHtml(booking.clientName)}</div>
-        <div><strong>Contact Number:</strong> ${escapeHtml(booking.contactNumber)}</div>
-        <div><strong>Address:</strong> ${escapeHtml(booking.address)}</div>
-      </div>
+      <div class="slip-grid" id="guestDetailsGrid"></div>
     </section>
 
     <section class="slip-section">
       <h4>Booking Details</h4>
-      <div class="slip-grid">
-        <div><strong>Booking ID:</strong> ${escapeHtml(booking.bookingId)}</div>
-        <div><strong>Booking Date:</strong> ${escapeHtml(booking.bookingDate)}</div>
-        <div><strong>Day:</strong> ${escapeHtml(booking.day)}</div>
-        <div><strong>Event Type:</strong> ${escapeHtml(booking.eventType)}</div>
-        <div><strong>Time Slot:</strong> ${escapeHtml(booking.timeSlot)}</div>
-        <div><strong>Start Time:</strong> ${escapeHtml(booking.startTime)}</div>
-        <div><strong>End Time:</strong> ${escapeHtml(booking.endTime)}</div>
-        <div><strong>Number of Guests:</strong> ${booking.guests}</div>
-      </div>
+      <div class="slip-grid" id="bookingDetailsGrid"></div>
       <p><strong>Amenities Included:</strong></p>
-      <div class="badge-list">${amenities.map((item) => `<span>${item}</span>`).join("")}</div>
+      <div class="badge-list" id="amenitiesList"></div>
     </section>
 
     <section class="slip-section">
       <h4>Payment Summary</h4>
-      <div class="slip-grid">
-        <div><strong>Total Booking Amount:</strong> PKR ${Number(booking.totalAmount).toLocaleString()}</div>
-        <div><strong>Advance Payment Received:</strong> PKR ${Number(booking.advancePayment).toLocaleString()}</div>
-        <div><strong>Remaining Balance:</strong> PKR ${Number(booking.remainingAmount).toLocaleString()}</div>
-      </div>
+      <div class="slip-grid" id="paymentDetailsGrid"></div>
     </section>
 
     <section class="slip-section terms">
       <h4>Terms & Conditions</h4>
-      <ul>${terms.map((term) => `<li>${escapeHtml(term)}</li>`).join("")}</ul>
+      <ul id="termsList"></ul>
     </section>
 
     <footer class="slip-footer">
-      <p>${escapeHtml(settings.footerMessage)}</p>
-      <p><strong>Phone:</strong> ${escapeHtml(settings.phoneNumber)} &nbsp; | &nbsp; <strong>WhatsApp:</strong> ${escapeHtml(settings.whatsappNumber)}</p>
-      <p><strong>Address:</strong> ${escapeHtml(settings.farmhouseAddress)}</p>
+      <p id="slipFooterMessage"></p>
+      <p><strong>Phone:</strong> <span id="slipPhone"></span> &nbsp; | &nbsp; <strong>WhatsApp:</strong> <span id="slipWhatsapp"></span></p>
+      <p><strong>Address:</strong> <span id="slipAddress"></span></p>
     </footer>
   `;
+
+  const logoContainer = document.getElementById("slipLogoContainer");
+  const logoElement = document.createElement(settings.logo ? "img" : "div");
+  logoElement.className = "slip-logo";
+  if (settings.logo && isSafeLogoSource(settings.logo)) {
+    logoElement.src = settings.logo;
+    logoElement.alt = "Farmhouse logo";
+  }
+  logoContainer.appendChild(logoElement);
+
+  document.getElementById("slipFarmhouseName").textContent = settings.farmhouseName;
+  fillDetailGrid("guestDetailsGrid", [
+    ["Client Name:", booking.clientName],
+    ["Contact Number:", booking.contactNumber],
+    ["Address:", booking.address],
+  ]);
+  fillDetailGrid("bookingDetailsGrid", [
+    ["Booking ID:", booking.bookingId],
+    ["Booking Date:", booking.bookingDate],
+    ["Day:", booking.day],
+    ["Event Type:", booking.eventType],
+    ["Time Slot:", booking.timeSlot],
+    ["Start Time:", booking.startTime],
+    ["End Time:", booking.endTime],
+    ["Number of Guests:", String(booking.guests)],
+  ]);
+  fillDetailGrid("paymentDetailsGrid", [
+    ["Total Booking Amount:", `PKR ${Number(booking.totalAmount).toLocaleString()}`],
+    ["Advance Payment Received:", `PKR ${Number(booking.advancePayment).toLocaleString()}`],
+    ["Remaining Balance:", `PKR ${Number(booking.remainingAmount).toLocaleString()}`],
+  ]);
+
+  const amenityContainer = document.getElementById("amenitiesList");
+  amenities.forEach((item) => {
+    const badge = document.createElement("span");
+    badge.textContent = item;
+    amenityContainer.appendChild(badge);
+  });
+
+  const termsList = document.getElementById("termsList");
+  terms.forEach((term) => {
+    const li = document.createElement("li");
+    li.textContent = term;
+    termsList.appendChild(li);
+  });
+
+  document.getElementById("slipFooterMessage").textContent = settings.footerMessage;
+  document.getElementById("slipPhone").textContent = settings.phoneNumber;
+  document.getElementById("slipWhatsapp").textContent = settings.whatsappNumber;
+  document.getElementById("slipAddress").textContent = settings.farmhouseAddress;
 }
 
 function setupSlipActions() {
@@ -458,10 +503,39 @@ function downloadFile(filename, content, type) {
   URL.revokeObjectURL(url);
 }
 
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.innerText = String(text ?? "");
-  return div.innerHTML;
+function fillDetailGrid(containerId, entries) {
+  const container = document.getElementById(containerId);
+  entries.forEach(([label, value]) => {
+    const row = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = `${label} `;
+    row.appendChild(strong);
+    row.appendChild(document.createTextNode(String(value ?? "")));
+    container.appendChild(row);
+  });
+}
+
+function encodeStoredPayload(value) {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function decodeStoredPayload(value) {
+  try {
+    const binary = atob(value);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return value;
+  }
+}
+
+function isSafeLogoSource(src) {
+  return src.startsWith("data:image/") || src.startsWith("https://") || src.startsWith("http://");
 }
 
 function fileToDataUrl(file) {
